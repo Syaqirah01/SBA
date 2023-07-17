@@ -1,0 +1,81 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <string.h>
+#include <sys/wait.h>
+
+void sigint_handler(int signal) {
+  printf("Received SIGINT signal\n");
+}
+
+int main() {
+  // Create a pipe.
+  int fd[2];
+  pipe(fd);
+
+  // Fork 3 child processes.
+  pid_t pid1, pid2, pid3;
+  pid1 = fork();
+  if (pid1 == 0) {
+    // Child 1.
+    // Set up a handler for the SIGINT signal.
+    struct sigaction sa;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = sigint_handler;
+    sigaction(SIGINT, &sa, NULL);
+
+    // Send a signal to the parent.
+    raise(SIGINT);
+    // Read a message from the parent.
+    char message[100];
+    read(fd[0], message, 100);
+    printf("Child 1 received message: %s\n", message);
+    printf("Child 1 interrupt message: %s\n", "INTERRUPT_1");
+    exit(0);
+  } else if ((pid2 = fork()) == 0) {
+    // Child 2.
+    // Set up a handler for the SIGINT signal.
+    struct sigaction sa;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = sigint_handler;
+    sigaction(SIGINT, &sa, NULL);
+
+    // Send a signal to the parent.
+    raise(SIGINT);
+    // Read a message from the parent.
+    char message[100];
+    read(fd[0], message, 100);
+    printf("Child 2 received message: %s\n", message);
+    printf("Child 2 interrupt message: %s\n", "INTERRUPT_2");
+    exit(0);
+  } else if ((pid3 = fork()) == 0) {
+    // Child 3.
+    // Set up a handler for the SIGINT signal.
+    struct sigaction sa;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = sigint_handler;
+    sigaction(SIGINT, &sa, NULL);
+
+    // Send a signal to the parent.
+    raise(SIGINT);
+    // Read a message from the parent.
+    char message[100];
+    read(fd[0], message, 100);
+    printf("Child 3 received message: %s\n", message);
+    printf("Child 3 interrupt message: %s\n", "INTERRUPT_3");
+    exit(0);
+  }
+
+  // Parent.
+  // Wait for all child processes to terminate.
+  waitpid(pid1, NULL, 0);
+  waitpid(pid2, NULL, 0);
+  waitpid(pid3, NULL, 0);
+
+  // Close the pipe.
+  close(fd[0]);
+  close(fd[1]);
+
+  return 0;
+}

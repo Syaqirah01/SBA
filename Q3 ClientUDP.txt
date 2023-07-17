@@ -1,0 +1,16 @@
+import socket
+
+def main():
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    number = random.randint(100, 1000)
+    message = str(number).encode()
+
+    client_socket.sendto(message, ("localhost", 8080))
+
+    response, address = client_socket.recvfrom(1024)
+
+    print(response.decode())
+
+if __name__ == "__main__":
+    main()

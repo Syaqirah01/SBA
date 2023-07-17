@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+int main() {
+  // Create a socket.
+  int server_socket = socket(AF_INET, SOCK_STREAM, 0);
+  if (server_socket == -1) {
+    printf("Failed to create socket\n");
+    exit(1);
+  }
+
+  // Bind the socket to a port.
+  struct sockaddr_in server_address;
+  server_address.sin_family = AF_INET;
+  server_address.sin_port = htons(8080);
+  server_address.sin_addr.s_addr = INADDR_ANY;
+  if (bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address)) == -1) {
+    printf("Failed to bind socket\n");
+    exit(1);
+  }
+
+  // Listen for connections.
+  listen(server_socket, 5);
+
+  // Accept a connection.
+  int client_socket = accept(server_socket, NULL, NULL);
+  if (client_socket == -1) {
+    printf("Failed to accept connection\n");
+    exit(1);
+  }
+
+  // Generate a random number.
+  int random_number = rand() % (80000 - 50000 + 1) + 50000;
+
+  // Send the random number to the client.
+  send(client_socket, &random_number, sizeof(random_number), 0);
+
+  // Close the socket.
+  close(server_socket);
+  close(client_socket);
+
+  return 0;
+}

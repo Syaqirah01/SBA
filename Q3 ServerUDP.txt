@@ -1,0 +1,27 @@
+import socket
+import random
+
+def is_prime(number):
+    if number <= 1:
+        return False
+    for i in range(2, number):
+        if number % i == 0:
+            return False
+    return True
+
+def main():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket.bind(('', 8080))
+
+    while True:
+        data, address = server_socket.recvfrom(1024)
+        number = int(data.decode())
+
+        response = "The number is prime" if is_prime(number) else "The number is not prime"
+
+        server_socket.sendto(response.encode(), address)
+
+        print(str(number))
+
+if __name__ == "__main__":
+    main()
